@@ -1,12 +1,12 @@
 package main
 
 import (
-"fmt"
-"strconv"
-"encoding/json"
+	"fmt"
+	"strconv"
+	"encoding/json"
 
-"github.com/hyperledger/fabric/core/chaincode/shim"
-pb "github.com/hyperledger/fabric/protos/peer"
+	"github.com/hyperledger/fabric/core/chaincode/shim"
+	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
 // SimpleChaincode example simple Chaincode implementation
