@@ -116,6 +116,53 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 
 
 func (t *SimpleChaincode) register(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+
+	//_, args := stub.GetFunctionAndParameters()
+	var userId string
+	var value string
+	var err error
+	//
+	if len(args) != 3 {
+		return shim.Error("Incorrect number of arguments. Expecting 3")
+	}
+
+	userId = args[1]
+	value = args[2]
+
+	err = stub.PutState(userId, []byte(value))
+
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+
+
+	//
+	//// Initialize the chaincode
+	//A = args[0]
+	//Aval, err = strconv.Atoi(args[1])
+	//if err != nil {
+	//	return shim.Error("Expecting integer value for asset holding")
+	//}
+	//B = args[2]
+	//Bval, err = strconv.Atoi(args[3])
+	//if err != nil {
+	//	return shim.Error("Expecting integer value for asset holding")
+	//}
+	//fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)
+	//
+	//// Write the state to the ledger
+	//err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
+	//if err != nil {
+	//	return shim.Error(err.Error())
+	//}
+	//
+	//err = stub.PutState(B, []byte(strconv.Itoa(Bval)))
+	//if err != nil {
+	//	return shim.Error(err.Error())
+	//}
+
+
 	return shim.Success(nil)
 }
 
