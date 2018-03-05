@@ -137,6 +137,12 @@ func (t *SimpleChaincode) register(stub shim.ChaincodeStubInterface, args []stri
 
 
 
+	query, err := stub.GetState(userId)
+	if nil != err {
+		shim.Error(err.Error())
+	}
+
+
 	//
 	//// Initialize the chaincode
 	//A = args[0]
@@ -163,7 +169,7 @@ func (t *SimpleChaincode) register(stub shim.ChaincodeStubInterface, args []stri
 	//}
 
 
-	return shim.Success(nil)
+	return shim.Success(query)
 }
 
 func (t *SimpleChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb.Response {
