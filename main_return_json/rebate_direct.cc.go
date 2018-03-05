@@ -95,39 +95,67 @@ func (chaincode *RebateDirectChainCode) register(stub shim.ChaincodeStubInterfac
 }
 func (chainCode *RebateDirectChainCode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
-	var userId string
+	//var userId string
+	//var err error
+	//
+	//queryResponse := &QueryResponse{}
+	//
+	//if len(args) != 2 {
+	//	queryResponse.message = "Incorrect number of arguments"
+	//	queryResponse.status = "failed"
+	//	queryResponse.data = nil
+	//	return shim.Error(string(response2bytes(queryResponse)))
+	//}
+	//
+	//
+	//userId = args[1]
+	//
+	//recordByte, err := chainCode.getRecordByUserId(stub, userId)
+	//
+	//if nil != err {
+	//	return shim.Error("query error " + err.Error())
+	//}
+	//if nil != recordByte {
+	//	queryResponse.data = bytes2response(recordByte)
+	//	queryResponse.status = "success"
+	//	queryResponse.message = "query success"
+	//} else {
+	//	queryResponse.message = "record is empty"
+	//	queryResponse.status = "failed"
+	//	queryResponse.data = nil
+	//}
+	//return shim.Success(response2bytes(queryResponse))
+	//
+	//
+	//return shim.Success(nil)
+
+	var A string // Entities
 	var err error
 
-	queryResponse := &QueryResponse{}
-
 	if len(args) != 2 {
-		queryResponse.message = "Incorrect number of arguments"
-		queryResponse.status = "failed"
-		queryResponse.data = nil
-		return shim.Error(string(response2bytes(queryResponse)))
+		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
 	}
 
+	A = args[1]
 
-	userId = args[1]
-
-	recordByte, err := chainCode.getRecordByUserId(stub, userId)
-
-	if nil != err {
-		return shim.Error("query error " + err.Error())
+	// Get the state from the ledger
+	Avalbytes, err := stub.GetState(A)
+	if err != nil {
+		jsonResp := "{\"Error\":\"Failed to get state for " + A + "\"}"
+		return shim.Error(jsonResp)
 	}
-	if nil != recordByte {
-		queryResponse.data = bytes2response(recordByte)
-		queryResponse.status = "success"
-		queryResponse.message = "query success"
-	} else {
-		queryResponse.message = "record is empty"
-		queryResponse.status = "failed"
-		queryResponse.data = nil
+
+	if Avalbytes == nil {
+		jsonResp := "{\"Error\":\"Nil amount for " + A + "\"}"
+		return shim.Error(jsonResp)
 	}
-	return shim.Success(response2bytes(queryResponse))
+
+	jsonResp := "{\"Name\":\"" + A + "\",\"Amount\":\"" + string(Avalbytes) + "\"}"
+	fmt.Printf("Query Response:%s\n", jsonResp)
+	return shim.Success(Avalbytes)
 
 
-	return shim.Success(nil)
+
 }
 func (chainCode *RebateDirectChainCode) checkRegistrition(stub shim.ChaincodeStubInterface, userId string) (bool, error) {
 	storeValue, storeError := stub.GetState(userId)
@@ -161,6 +189,20 @@ func (chainCode *RebateDirectChainCode) getRecordByUserId(stub shim.ChaincodeStu
 	}
 	return nil, nil
 }
+
+
+// query trade history
+func (chainCode *RebateDirectChainCode) queryTradeHistory(stub shim.ChaincodeStubInterface, userId string) []Record  {
+
+	//var recordList []Record = []Record
+
+	stub.GetHistoryForKey(userId)
+
+
+	return recordList
+}
+
+
 
 
 func response2bytes(queryResponse *QueryResponse) []byte {
