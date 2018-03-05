@@ -184,3 +184,12 @@ func bytes2response(data []byte) QueryResponse {
 	return queryResponse
 
 }
+
+
+
+func main() {
+	err := shim.Start(new(RebateDirectChainCode))
+	if err != nil {
+		fmt.Printf("Error starting Simple chaincode: %s", err)
+	}
+}
