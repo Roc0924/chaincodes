@@ -4,6 +4,8 @@ package main_return_json
 import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
+	"encoding/json"
+	"fmt"
 )
 
 
@@ -16,6 +18,12 @@ type RebateDirectChainCode struct {
 type Record struct {
 	userId string
 	state interface{}
+}
+
+type QueryResponse struct{
+	message string
+	status string
+	data interface{}
 }
 
 func (chaincode *RebateDirectChainCode)Init(stub shim.ChaincodeStubInterface) pb.Response {
@@ -85,8 +93,38 @@ func (chaincode *RebateDirectChainCode) register(stub shim.ChaincodeStubInterfac
 
 	return shim.Success(nil)
 }
-func (chaincode *RebateDirectChainCode) query(stubInterface shim.ChaincodeStubInterface, args []string) pb.Response {
+func (chainCode *RebateDirectChainCode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
+	var userId string
+	var err error
+
+	queryResponse := &QueryResponse{}
+
+	if len(args) != 2 {
+		queryResponse.message = "Incorrect number of arguments"
+		queryResponse.status = "failed"
+		queryResponse.data = nil
+		return shim.Error(string(response2bytes(queryResponse)))
+	}
+
+
+	userId = args[1]
+
+	recordByte, err := chainCode.getRecordByUserId(stub, userId)
+
+	if nil != err {
+		return shim.Error("query error " + err.Error())
+	}
+	if nil != recordByte {
+		queryResponse.data = bytes2response(recordByte)
+		queryResponse.status = "success"
+		queryResponse.message = "query success"
+	} else {
+		queryResponse.message = "record is empty"
+		queryResponse.status = "failed"
+		queryResponse.data = nil
+	}
+	return shim.Success(response2bytes(queryResponse))
 
 
 	return shim.Success(nil)
@@ -102,4 +140,47 @@ func (chainCode *RebateDirectChainCode) checkRegistrition(stub shim.ChaincodeStu
 	}
 
 	return false, nil
+}
+
+/*
+get record by user id
+ */
+func (chainCode *RebateDirectChainCode) getRecordByUserId(stub shim.ChaincodeStubInterface, userId string) ([]byte, error) {
+
+
+	storeValue, storeError := stub.GetState(userId)
+	if nil != storeError {
+		shim.Error("get user error " + storeError.Error())
+		return nil, storeError
+	}
+	if nil != storeValue {
+		shim.Success([]byte("user " + userId + "has registered"))
+
+		return storeValue, storeError
+
+	}
+	return nil, nil
+}
+
+
+func response2bytes(queryResponse *QueryResponse) []byte {
+
+	responseBytes, responseError := json.Marshal(queryResponse)
+	if nil != responseError {
+		fmt.Printf("error %s arise when marshal response", responseError.Error())
+		return nil
+	}
+	return responseBytes
+
+}
+
+
+func bytes2response(data []byte) QueryResponse {
+	var queryResponse QueryResponse
+	responseError := json.Unmarshal(data, &queryResponse)
+	if nil != responseError {
+		fmt.Printf("error %s arise when marshal response", responseError.Error())
+	}
+	return queryResponse
+
 }
