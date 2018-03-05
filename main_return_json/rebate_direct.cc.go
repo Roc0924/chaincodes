@@ -1,36 +1,71 @@
-package main_return_json
+/*
+Copyright IBM Corp. 2016 All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+		 http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package demo_json
 
 
 import (
+	"fmt"
+	"strconv"
+
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
-	"encoding/json"
-	"fmt"
 )
 
-
-var logger = shim.NewLogger("main")
-
-type RebateDirectChainCode struct {
-
+// SimpleChaincode example simple Chaincode implementation
+type SimpleChaincode struct {
 }
 
-type Record struct {
-	userId string
-	state interface{}
-}
+// Init initializes the chaincode state
+func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
+	fmt.Println("########### example_cc Init ###########")
+	//_, args := stub.GetFunctionAndParameters()
+	//var A, B string    // Entities
+	//var Aval, Bval int // Asset holdings
+	//var err error
+	//
+	//if len(args) != 4 {
+	//	return shim.Error("Incorrect number of arguments. Expecting 4")
+	//}
+	//
+	//// Initialize the chaincode
+	//A = args[0]
+	//Aval, err = strconv.Atoi(args[1])
+	//if err != nil {
+	//	return shim.Error("Expecting integer value for asset holding")
+	//}
+	//B = args[2]
+	//Bval, err = strconv.Atoi(args[3])
+	//if err != nil {
+	//	return shim.Error("Expecting integer value for asset holding")
+	//}
+	//fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)
+	//
+	//// Write the state to the ledger
+	//err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
+	//if err != nil {
+	//	return shim.Error(err.Error())
+	//}
+	//
+	//err = stub.PutState(B, []byte(strconv.Itoa(Bval)))
+	//if err != nil {
+	//	return shim.Error(err.Error())
+	//}
 
-type QueryResponse struct{
-	message string
-	status string
-	data interface{}
-}
-
-func (chaincode *RebateDirectChainCode)Init(stub shim.ChaincodeStubInterface) pb.Response {
-	logger.SetLevel(shim.LogInfo)
-	logger.Infof("===========================================Init rebate_direct_cc===========================================")
-
-	if transientMap, err := stub.GetTransient(); nil == err {
+	if transientMap, err := stub.GetTransient(); err == nil {
 		if transientData, ok := transientMap["result"]; ok {
 			return shim.Success(transientData)
 		}
@@ -39,8 +74,17 @@ func (chaincode *RebateDirectChainCode)Init(stub shim.ChaincodeStubInterface) pb
 
 }
 
-func (chaincode *RebateDirectChainCode)Invoke(stub shim.ChaincodeStubInterface) pb.Response {
+
+
+
+
+
+
+// Invoke makes payment of X units from A to B
+func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
+	fmt.Println("########### example_cc Invoke ###########")
 	function, args := stub.GetFunctionAndParameters()
+
 	if function != "invoke" {
 		return shim.Error("Unknown function call")
 	}
@@ -49,85 +93,113 @@ func (chaincode *RebateDirectChainCode)Invoke(stub shim.ChaincodeStubInterface) 
 		return shim.Error("Incorrect number of arguments. Expecting at least 2")
 	}
 
-	if "register" == args[0] {
-
-		return chaincode.register(stub, args)
-
+	if args[0] == "delete" {
+		// Deletes an entity from its state
+		return t.delete(stub, args)
 	}
 
-	if "query" == args[0] {
-		return chaincode.query(stub, args)
+	if args[0] == "query" {
+		// queries an entity state
+		return t.query(stub, args)
+	}
+	if args[0] == "move" {
+		// Deletes an entity from its state
+		return t.move(stub, args)
 	}
 
-	return shim.Success(nil)
-
+	if args[0] == "register" {
+		// Deletes an entity from its state
+		return t.register(stub, args)
+	}
+	return shim.Error("Unknown action, check the first argument, must be one of 'delete', 'query', or 'move'")
 }
 
 
+func (t *SimpleChaincode) register(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	return shim.Success(nil)
+}
 
-func (chaincode *RebateDirectChainCode) register(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if 3 != len(args) {
-		logger.Errorf("Incorrect number of arguments, Expecting 3")
+func (t *SimpleChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	// must be an invoke
+	var A, B string    // Entities
+	var Aval, Bval int // Asset holdings
+	var X int          // Transaction value
+	var err error
+
+	if len(args) != 4 {
+		return shim.Error("Incorrect number of arguments. Expecting 4, function followed by 2 names and 1 value")
 	}
 
-	userId := args[1]
-	recordStr := args[2]
+	A = args[1]
+	B = args[2]
 
-	// check whether the user has registered
-	isRegistered, checkError := chaincode.checkRegistrition(stub, userId)
-
-	if nil != checkError {
-		return shim.Error("check register error " + checkError.Error())
+	// Get the state from the ledger
+	// TODO: will be nice to have a GetAllState call to ledger
+	Avalbytes, err := stub.GetState(A)
+	if err != nil {
+		return shim.Error("Failed to get state")
 	}
-	if isRegistered {
-		return shim.Error("user " + userId + " has registered")
+	if Avalbytes == nil {
+		return shim.Error("Entity not found")
+	}
+	Aval, _ = strconv.Atoi(string(Avalbytes))
+
+	Bvalbytes, err := stub.GetState(B)
+	if err != nil {
+		return shim.Error("Failed to get state")
+	}
+	if Bvalbytes == nil {
+		return shim.Error("Entity not found")
+	}
+	Bval, _ = strconv.Atoi(string(Bvalbytes))
+
+	// Perform the execution
+	X, err = strconv.Atoi(args[3])
+	if err != nil {
+		return shim.Error("Invalid transaction amount, expecting a integer value")
+	}
+	Aval = Aval - X
+	Bval = Bval + X
+	fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)
+
+	// Write the state back to the ledger
+	err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
+	if err != nil {
+		return shim.Error(err.Error())
 	}
 
-	// create the account
-	putError := stub.PutState(userId, []byte(recordStr))
-	if nil != putError {
-		return shim.Error("create account " + userId + "error" + putError.Error())
+	err = stub.PutState(B, []byte(strconv.Itoa(Bval)))
+	if err != nil {
+		return shim.Error(err.Error())
 	}
 
+	if transientMap, err := stub.GetTransient(); err == nil {
+		if transientData, ok := transientMap["result"]; ok {
+			return shim.Success(transientData)
+		}
+	}
+	return shim.Success(nil)
+}
 
+// Deletes an entity from state
+func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+
+	A := args[1]
+
+	// Delete the key from the state in ledger
+	err := stub.DelState(A)
+	if err != nil {
+		return shim.Error("Failed to delete state")
+	}
 
 	return shim.Success(nil)
 }
-func (chainCode *RebateDirectChainCode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
-	//var userId string
-	//var err error
-	//
-	//queryResponse := &QueryResponse{}
-	//
-	//if len(args) != 2 {
-	//	queryResponse.message = "Incorrect number of arguments"
-	//	queryResponse.status = "failed"
-	//	queryResponse.data = nil
-	//	return shim.Error(string(response2bytes(queryResponse)))
-	//}
-	//
-	//
-	//userId = args[1]
-	//
-	//recordByte, err := chainCode.getRecordByUserId(stub, userId)
-	//
-	//if nil != err {
-	//	return shim.Error("query error " + err.Error())
-	//}
-	//if nil != recordByte {
-	//	queryResponse.data = bytes2response(recordByte)
-	//	queryResponse.status = "success"
-	//	queryResponse.message = "query success"
-	//} else {
-	//	queryResponse.message = "record is empty"
-	//	queryResponse.status = "failed"
-	//	queryResponse.data = nil
-	//}
-	//return shim.Success(response2bytes(queryResponse))
-	//
-	//
-	//return shim.Success(nil)
+// Query callback representing the query of a chaincode
+func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	var A string // Entities
 	var err error
@@ -153,84 +225,10 @@ func (chainCode *RebateDirectChainCode) query(stub shim.ChaincodeStubInterface, 
 	jsonResp := "{\"Name\":\"" + A + "\",\"Amount\":\"" + string(Avalbytes) + "\"}"
 	fmt.Printf("Query Response:%s\n", jsonResp)
 	return shim.Success(Avalbytes)
-
-
-
 }
-func (chainCode *RebateDirectChainCode) checkRegistrition(stub shim.ChaincodeStubInterface, userId string) (bool, error) {
-	storeValue, storeError := stub.GetState(userId)
-	if nil != storeError {
-		shim.Error("get user error " + storeError.Error())
-		return false, storeError
-	}
-	if nil != storeValue {
-		return true, nil
-	}
-
-	return false, nil
-}
-
-/*
-get record by user id
- */
-func (chainCode *RebateDirectChainCode) getRecordByUserId(stub shim.ChaincodeStubInterface, userId string) ([]byte, error) {
-
-
-	storeValue, storeError := stub.GetState(userId)
-	if nil != storeError {
-		shim.Error("get user error " + storeError.Error())
-		return nil, storeError
-	}
-	if nil != storeValue {
-		shim.Success([]byte("user " + userId + "has registered"))
-
-		return storeValue, storeError
-
-	}
-	return nil, nil
-}
-
-
-// query trade history
-func (chainCode *RebateDirectChainCode) queryTradeHistory(stub shim.ChaincodeStubInterface, userId string) []Record  {
-
-	//var recordList []Record = []Record
-
-	stub.GetHistoryForKey(userId)
-
-
-	return recordList
-}
-
-
-
-
-func response2bytes(queryResponse *QueryResponse) []byte {
-
-	responseBytes, responseError := json.Marshal(queryResponse)
-	if nil != responseError {
-		fmt.Printf("error %s arise when marshal response", responseError.Error())
-		return nil
-	}
-	return responseBytes
-
-}
-
-
-func bytes2response(data []byte) QueryResponse {
-	var queryResponse QueryResponse
-	responseError := json.Unmarshal(data, &queryResponse)
-	if nil != responseError {
-		fmt.Printf("error %s arise when marshal response", responseError.Error())
-	}
-	return queryResponse
-
-}
-
-
 
 func main() {
-	err := shim.Start(new(RebateDirectChainCode))
+	err := shim.Start(new(SimpleChaincode))
 	if err != nil {
 		fmt.Printf("Error starting Simple chaincode: %s", err)
 	}
