@@ -47,7 +47,7 @@ func (chainCode *RebateChainCodeJSon) Invoke(stub shim.ChaincodeStubInterface) p
 	}
 
 	if "queryJson" == args[0] {
-		if len(args) != 3 {
+		if len(args) != 2 {
 			return shim.Error("Call method queryJson error. Incorrect number of arguments. Expecting 2")
 		}
 
