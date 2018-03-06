@@ -64,7 +64,6 @@ func (chainCode *RebateChainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Re
 	}
 
 	if "rebateDirectly" == args[0] {
-		fmt.Printf("test update /n")
 		if len(args) != 4 {
 			return shim.Error("Call method rebateDirectly error. Incorrect number of arguments. Expecting 4")
 		}
@@ -129,13 +128,16 @@ func (chainCode *RebateChainCode) rebateDirectly(stub shim.ChaincodeStubInterfac
 	}
 
 	deltaInt, deltaIntErr := strconv.Atoi(delta)
+	fmt.Printf("deltaInt:%d\n", deltaInt)
 	if nil != deltaIntErr {
 		return shim.Error("conv delta:" + delta + " error:" + deltaIntErr.Error())
 	}
 
+	fmt.Printf("before sourceInt:%d, destinationInt:%d\n", sourceInt, destinationInt)
 	//rebate
 	sourceInt -= deltaInt
 	destinationInt += deltaInt
+	fmt.Printf("after sourceInt:%d, destinationInt:%d\n", sourceInt, destinationInt)
 
 
 	//write state to ledger
@@ -143,10 +145,12 @@ func (chainCode *RebateChainCode) rebateDirectly(stub shim.ChaincodeStubInterfac
 	if nil != sourcePutErr {
 		return shim.Error("put source " + source + " back to ledger error:" + sourcePutErr.Error())
 	}
+	fmt.Printf("put source\n")
 	destinationPutErr := stub.PutState(destination, []byte(string(destinationInt)))
 	if nil != destinationPutErr {
 		return shim.Error("put source " + destination + " back to ledger error:" + destinationPutErr.Error())
 	}
+	fmt.Printf("put destination\n")
 
 	return shim.Success(nil)
 }
