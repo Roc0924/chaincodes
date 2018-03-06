@@ -113,7 +113,7 @@ func (t *SimpleChaincode) register(stub shim.ChaincodeStubInterface, args []stri
 
 	fmt.Println("==================register====================")
 	for i := 0; i < len(args); i++ {
-		fmt.Println("arg[%d]:%s", i, args[i])
+		fmt.Printf("arg[%d]:%s", i, args[i])
 	}
 	return shim.Success(nil)
 }
