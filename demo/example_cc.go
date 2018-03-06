@@ -200,6 +200,10 @@ func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string
 // Query callback representing the query of a chaincode
 func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
+	for i := 0; i < len(args); i++ {
+		fmt.Println("arg[%d]:%s", i, args[i])
+	}
+
 	var A string // Entities
 	var err error
 
