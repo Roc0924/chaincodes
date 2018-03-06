@@ -145,12 +145,12 @@ func (chainCode *RebateChainCode) rebateDirectly(stub shim.ChaincodeStubInterfac
 	if nil != sourcePutErr {
 		return shim.Error("put source " + source + " back to ledger error:" + sourcePutErr.Error())
 	}
-	fmt.Printf("put source\n")
+	fmt.Printf("put source:%s\n", string(sourceInt))
 	destinationPutErr := stub.PutState(destination, []byte(string(destinationInt)))
 	if nil != destinationPutErr {
 		return shim.Error("put source " + destination + " back to ledger error:" + destinationPutErr.Error())
 	}
-	fmt.Printf("put destination\n")
+	fmt.Printf("put destination%s\n", string(destinationInt))
 
 	return shim.Success(nil)
 }
