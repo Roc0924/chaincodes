@@ -111,10 +111,14 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 
 func (t *SimpleChaincode) register(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
-	fmt.Println("==================register====================")
+	fmt.Println("_==================register====================")
 	for i := 0; i < len(args); i++ {
-		fmt.Printf("arg[%d]:%s", i, args[i])
+		fmt.Printf("args[%d]:%s", i, args[i])
 	}
+	userId := args[1]
+	value := args[2]
+
+	fmt.Printf("register user:%s, value:%s", userId, value)
 	return shim.Success(nil)
 }
 
