@@ -135,8 +135,8 @@ func (chainCode *RebateChainCode) rebateDirectly(stub shim.ChaincodeStubInterfac
 
 	fmt.Printf("before sourceInt:%d, destinationInt:%d\n", sourceInt, destinationInt)
 	//rebate
-	sourceInt -= deltaInt
-	destinationInt += deltaInt
+	sourceInt = sourceInt - deltaInt
+	destinationInt = destinationInt + deltaInt
 	fmt.Printf("after sourceInt:%d, destinationInt:%d\n", sourceInt, destinationInt)
 
 
