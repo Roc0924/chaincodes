@@ -13,7 +13,6 @@ import (
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
-	"github.com/hyperledger/fabric/orderer/multichain"
 )
 //define chaincode struct
 type RebateChainCode struct {
@@ -55,12 +54,19 @@ func (chainCode *RebateChainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Re
 
 		return chainCode.register(stub, args[1], args[2])
 	}
-	
+
 	if "query" == args[0] {
 		if len(args) != 2 {
 			return shim.Error("Call method query error. Incorrect number of arguments. Expecting 2")
 		}
 		return chainCode.query(stub, args[1])
+	}
+
+	if "rebateDirectly" == args[0] {
+		if len(args) != 2 {
+			return shim.Error("Call method rebateDirectly error. Incorrect number of arguments. Expecting 4")
+		}
+		return chainCode.rebateDirectly(stub, args[1], args[2], args[3])
 	}
 
 
@@ -74,8 +80,26 @@ func (chainCode *RebateChainCode) register(stub shim.ChaincodeStubInterface, use
 
 	return shim.Success(nil)
 }
+
+//query record by userId
 func (chainCode *RebateChainCode) query(stub shim.ChaincodeStubInterface, userId string) pb.Response {
 
 
 	return shim.Success(nil)
+}
+
+//rebate directly
+func (chainCode *RebateChainCode) rebateDirectly(stub shim.ChaincodeStubInterface, source string, destination string, delta string) pb.Response {
+
+
+
+	return shim.Success(nil)
+}
+
+func main()  {
+	err := shim.Start(new(RebateChainCode))
+
+	if nil != err {
+		fmt.Printf("Error starting chaincode rebate_direct_cc, error: %s\n", err)
+	}
 }
