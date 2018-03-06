@@ -109,16 +109,21 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	return shim.Error("Unknown action, check the first argument, must be one of 'delete', 'query', 'move', or 'register'")
 }
 
+
+
+
+
+// register record
 func (t *SimpleChaincode) register(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
-	fmt.Println("_==================register====================")
+	fmt.Println("================== register ====================")
 	for i := 0; i < len(args); i++ {
-		fmt.Printf("args[%d]:%s", i, args[i])
+		fmt.Printf("args[ %d ]: %s", i, args[i])
 	}
 	userId := args[1]
 	value := args[2]
 
-	fmt.Printf("register user:%s, value:%s", userId, value)
+	fmt.Printf("register user: %s, value: %s", userId, value)
 	return shim.Success(nil)
 }
 
