@@ -106,7 +106,7 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		// Deletes an entity from its state
 		return t.register(stub, args)
 	}
-	return shim.Error("Unknown action, check the first argument, must be one of 'delete', 'query', or 'move'")
+	return shim.Error("Unknown action, check the first argument, must be one of 'delete', 'query', 'move', or 'register'")
 }
 
 func (t *SimpleChaincode) register(stub shim.ChaincodeStubInterface, args []string) pb.Response {
