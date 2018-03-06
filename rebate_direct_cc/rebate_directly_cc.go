@@ -64,6 +64,7 @@ func (chainCode *RebateChainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Re
 	}
 
 	if "rebateDirectly" == args[0] {
+		fmt.Printf("test update /n")
 		if len(args) != 4 {
 			return shim.Error("Call method rebateDirectly error. Incorrect number of arguments. Expecting 4")
 		}
