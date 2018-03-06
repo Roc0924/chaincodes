@@ -23,19 +23,17 @@ import (
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
-	"github.com/op/go-logging"
 )
 
 // SimpleChaincode example simple Chaincode implementation
 type SimpleChaincode struct {
 }
 
-var log = logging.MustGetLogger("main")
-
 // Init initializes the chaincode state
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	fmt.Println("########### example_cc Init ###########")
-	log.Infof("logger########### example_cc Init ###########")
+
+	fmt.Println("register two users")
 	_, args := stub.GetFunctionAndParameters()
 	var A, B string    // Entities
 	var Aval, Bval int // Asset holdings
@@ -104,7 +102,20 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		// Deletes an entity from its state
 		return t.move(stub, args)
 	}
+	if args[0] == "register" {
+		// Deletes an entity from its state
+		return t.register(stub, args)
+	}
 	return shim.Error("Unknown action, check the first argument, must be one of 'delete', 'query', or 'move'")
+}
+
+func (t *SimpleChaincode) register(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+
+	fmt.Println("==================register====================")
+	for i := 0; i < len(args); i++ {
+		fmt.Println("arg[%d]:%s", i, args[i])
+	}
+	return shim.Success(nil)
 }
 
 func (t *SimpleChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb.Response {
