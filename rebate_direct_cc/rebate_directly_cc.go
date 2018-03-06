@@ -133,24 +133,27 @@ func (chainCode *RebateChainCode) rebateDirectly(stub shim.ChaincodeStubInterfac
 		return shim.Error("conv delta:" + delta + " error:" + deltaIntErr.Error())
 	}
 
-	fmt.Printf("before sourceInt:%d, destinationInt:%d\n", sourceInt, destinationInt)
+
 	//rebate
-	sourceInt = sourceInt - deltaInt
-	destinationInt = destinationInt + deltaInt
-	fmt.Printf("after sourceInt:%d, destinationInt:%d\n", sourceInt, destinationInt)
+	fmt.Printf("before rebate sourceInt:%d, destinationInt:%d\n", sourceInt, destinationInt)
+	sourceInt -= deltaInt
+	destinationInt += deltaInt
+	fmt.Printf("after rebate sourceInt:%d, destinationInt:%d\n", sourceInt, destinationInt)
 
 
 	//write state to ledger
-	sourcePutErr := stub.PutState(source, []byte(string(sourceInt)))
+	sourcePutErr := stub.PutState(source, []byte(strconv.Itoa(sourceInt)))
 	if nil != sourcePutErr {
 		return shim.Error("put source " + source + " back to ledger error:" + sourcePutErr.Error())
 	}
-	fmt.Printf("put source:%s source:%s\n", source, string(sourceInt))
-	destinationPutErr := stub.PutState(destination, []byte(string(destinationInt)))
+	fmt.Printf("put source:%s source:%s\n", source, strconv.Itoa(sourceInt))
+
+	destinationPutErr := stub.PutState(destination, []byte(strconv.Itoa(destinationInt)))
 	if nil != destinationPutErr {
 		return shim.Error("put source " + destination + " back to ledger error:" + destinationPutErr.Error())
 	}
-	fmt.Printf("put destination%s destination%s\n", destination, string(destinationInt))
+	fmt.Printf("put destination%s destination%s\n", destination, strconv.Itoa(destinationInt))
+
 
 	return shim.Success(nil)
 }
