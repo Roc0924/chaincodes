@@ -118,7 +118,7 @@ func (t *SimpleChaincode) register(stub shim.ChaincodeStubInterface, args []stri
 
 	fmt.Println("================== register ====================")
 	for i := 0; i < len(args); i++ {
-		fmt.Printf("args[ %d ]: %s", i, args[i])
+		fmt.Printf("args[ %d ]: %s\n", i, args[i])
 	}
 	userId := args[1]
 	value := args[2]
@@ -210,7 +210,7 @@ func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string
 func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	for i := 0; i < len(args); i++ {
-		fmt.Println("arg[%d]:%s", i, args[i])
+		fmt.Printf("args[ %d ]: %s\n", i, args[i])
 	}
 
 	var A string // Entities
