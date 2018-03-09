@@ -40,32 +40,34 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	var err error
 
 	if len(args) != 4 {
-		return shim.Error("Incorrect number of arguments. Expecting 4")
+		fmt.Printf("Incorrect number of arguments. Expecting 4. Do nothing")
+	} else {
+		// Initialize the chaincode
+		A = args[0]
+		Aval, err = strconv.Atoi(args[1])
+		if err != nil {
+			return shim.Error("Expecting integer value for asset holding")
+		}
+		B = args[2]
+		Bval, err = strconv.Atoi(args[3])
+		if err != nil {
+			return shim.Error("Expecting integer value for asset holding")
+		}
+		fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)
+
+		// Write the state to the ledger
+		err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		err = stub.PutState(B, []byte(strconv.Itoa(Bval)))
+		if err != nil {
+			return shim.Error(err.Error())
+		}
 	}
 
-	// Initialize the chaincode
-	A = args[0]
-	Aval, err = strconv.Atoi(args[1])
-	if err != nil {
-		return shim.Error("Expecting integer value for asset holding")
-	}
-	B = args[2]
-	Bval, err = strconv.Atoi(args[3])
-	if err != nil {
-		return shim.Error("Expecting integer value for asset holding")
-	}
-	fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)
 
-	// Write the state to the ledger
-	err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	err = stub.PutState(B, []byte(strconv.Itoa(Bval)))
-	if err != nil {
-		return shim.Error(err.Error())
-	}
 
 	if transientMap, err := stub.GetTransient(); err == nil {
 		if transientData, ok := transientMap["result"]; ok {
@@ -123,7 +125,13 @@ func (t *SimpleChaincode) register(stub shim.ChaincodeStubInterface, args []stri
 	userId := args[1]
 	value := args[2]
 
-	fmt.Printf("register user: %s, value: %s", userId, value)
+	err := stub.PutState(userId, []byte(value))
+	if nil != err {
+		fmt.Errorf("put state error %s", err.Error())
+		return shim.Error(err.Error())
+	}
+
+	fmt.Printf("register user: %s, value: %s\n", userId, value)
 	return shim.Success(nil)
 }
 

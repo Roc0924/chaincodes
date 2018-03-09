@@ -5,9 +5,12 @@ import (
 	"strconv"
 	"encoding/json"
 
+	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
+
+var logger = flogging.MustGetLogger("main")
 
 // SimpleChaincode example simple Chaincode implementation
 type SimpleChaincode struct {
@@ -30,19 +33,21 @@ type Record struct {
 
 
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
-	fmt.Println("########### chain_code Init ###########")
+	fmt.Println("########### rebate_direct_cc Init ###########")
+	logger.Infof("########### rebate_direct_cc Init ###########")
 	if transientMap, err := stub.GetTransient(); err == nil {
 		if transientData, ok := transientMap["result"]; ok {
 			return shim.Success(transientData)
 		}
 	}
+
 	return shim.Success(nil)
 
 }
 
 // Invoke
 func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
-	fmt.Println("########### chain_code Invoke ###########")
+	fmt.Println("########### rebate_direct_cc Invoke ###########")
 	function, args := stub.GetFunctionAndParameters()
 
 	if function != "invoke" {
@@ -88,8 +93,8 @@ func (t *SimpleChaincode) register(stub shim.ChaincodeStubInterface, args []stri
 		return shim.Error("Incorrect number of arguments. Expecting 2")
 	}
 
-	userId := args[0]
-	value := args[1]
+	userId := args[1]
+	value := args[2]
 	shadowUserId := userId + "_s"
 
 	////////////////////////////////////////
