@@ -38,24 +38,24 @@ func (chaincode *RebateChaincode) Init(stub shim.ChaincodeStubInterface) pb.Resp
 func (chaincode *RebateChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	fmt.Println("ex02 Invoke")
 	function, args := stub.GetFunctionAndParameters()
-	if function == "deleteAccount" {
+	if function == "createAccount" {
+		// get one key's history records
+		return chaincode.createAccount(stub,args)
+	} else if function == "queryAccount" {
+		// get one key's history records
+		return chaincode.queryAccount(stub,args)
+	} else if function == "deleteAccount" {
 		// Deletes account from ledger state
 		return chaincode.deleteAccount(stub, args)
+	} else if function == "queryHistory" {
+		// get one key's history records
+		return chaincode.queryHistory(stub,args)
 	} else if function == "createPlan" {
 		// get one key's history records
 		return chaincode.createPlan(stub,args)
 	} else if function == "queryPlan" {
 		// the old "Query" is now implemtned in invoke
 		return chaincode.queryPlan(stub, args)
-	} else if function == "queryHistory" {
-		// get one key's history records
-		return chaincode.queryHistory(stub,args)
-	} else if function == "createAccount" {
-		// get one key's history records
-		return chaincode.createAccount(stub,args)
-	} else if function == "queryAccount" {
-		// get one key's history records
-		return chaincode.queryAccount(stub,args)
 	} else if function == "addAmountFromBudget" {
 		// get one key's history records
 		return chaincode.addAmountFromBudget(stub,args)
@@ -73,7 +73,8 @@ func (chaincode *RebateChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Re
 		return chaincode.minusExpectAmount(stub,args)
 	}*/
 
-	return shim.Error("Invalid invoke function name. Expecting \"invoke\" \"delete\" \"query\"")
+	return shim.Error("Invalid invoke function name. Expecting 'createAccount'" +
+		" 'queryAccount' 'deleteAccount' 'queryHistory' 'createPlan' 'queryPlan' 'addAmountFromBudget' 'query' 'query'")
 }
 func (chaincode *RebateChaincode) queryHistory(stub shim.ChaincodeStubInterface, args []string) pb.Response{
 	if len(args) != 1 {
