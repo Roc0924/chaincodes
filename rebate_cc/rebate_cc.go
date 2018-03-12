@@ -18,8 +18,8 @@ import (
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
-// SimpleChaincode example simple Chaincode implementation
-type SimpleChaincode struct {
+// Rebate chaincode implementation
+type RebateChaincode struct {
 }
 
 type RebateAccount struct{
@@ -29,53 +29,53 @@ type RebateAccount struct{
 	Memo string
 }
 
-func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
+func (chaincode *RebateChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	fmt.Println("ex02 Init")
 
 	return shim.Success(nil)
 }
 
-func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
+func (chaincode *RebateChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	fmt.Println("ex02 Invoke")
 	function, args := stub.GetFunctionAndParameters()
 	if function == "deleteAccount" {
-		// Deletes an entity from its state
-		return t.deleteAccount(stub, args)
+		// Deletes account from ledger state
+		return chaincode.deleteAccount(stub, args)
 	} else if function == "createPlan" {
 		// get one key's history records
-		return t.createPlan(stub,args)
+		return chaincode.createPlan(stub,args)
 	} else if function == "queryPlan" {
 		// the old "Query" is now implemtned in invoke
-		return t.queryPlan(stub, args)
+		return chaincode.queryPlan(stub, args)
 	} else if function == "queryHistory" {
 		// get one key's history records
-		return t.queryHistory(stub,args)
+		return chaincode.queryHistory(stub,args)
 	} else if function == "createAccount" {
 		// get one key's history records
-		return t.createAccount(stub,args)
+		return chaincode.createAccount(stub,args)
 	} else if function == "queryAccount" {
 		// get one key's history records
-		return t.queryAccount(stub,args)
+		return chaincode.queryAccount(stub,args)
 	} else if function == "addAmountFromBudget" {
 		// get one key's history records
-		return t.addAmountFromBudget(stub,args)
+		return chaincode.addAmountFromBudget(stub,args)
 	} /*else if function == "addAmountFromExpect" {
 		// get one key's history records
-		return t.addAmountFromExpect(stub,args)
+		return chaincode.addAmountFromExpect(stub,args)
 	} else if function == "minusAmount" {
 		// get one key's history records
-		return t.minusAmount(stub,args)
+		return chaincode.minusAmount(stub,args)
 	} else if function == "addExpectAmount" {
 		// get one key's history records
-		return t.addExpectAmount(stub,args)
+		return chaincode.addExpectAmount(stub,args)
 	} else if function == "minusExpectAmount" {
 		// get one key's history records
-		return t.minusExpectAmount(stub,args)
+		return chaincode.minusExpectAmount(stub,args)
 	}*/
 
 	return shim.Error("Invalid invoke function name. Expecting \"invoke\" \"delete\" \"query\"")
 }
-func (t *SimpleChaincode) queryHistory(stub shim.ChaincodeStubInterface, args []string) pb.Response{
+func (chaincode *RebateChaincode) queryHistory(stub shim.ChaincodeStubInterface, args []string) pb.Response{
 	//student1:=Student{1,"Devin Zeng"}
 	//key:="Student:"+strconv.Itoa(student1.Id)
 	if len(args) != 1 {
@@ -118,7 +118,7 @@ func getHistoryListResult(resultsIterator shim.HistoryQueryIteratorInterface) ([
 
 
 // Deletes an entity from state
-func (t *SimpleChaincode) createAccount(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (chaincode *RebateChaincode) createAccount(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	var amount, expectAmount int // Asset holdings
 	var err error
 	if len(args) != 6 {
@@ -145,7 +145,7 @@ func (t *SimpleChaincode) createAccount(stub shim.ChaincodeStubInterface, args [
 	return shim.Success(nil)
 }
 // Deletes an entity from state
-func (t *SimpleChaincode) createPlan(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (chaincode *RebateChaincode) createPlan(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 2 {
 		return shim.Error("Incorrect number of arguments. Expecting 1")
 	}
@@ -161,7 +161,7 @@ func (t *SimpleChaincode) createPlan(stub shim.ChaincodeStubInterface, args []st
 	return shim.Success(nil)
 }
 // Deletes an entity from state
-func (t *SimpleChaincode) deleteAccount(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (chaincode *RebateChaincode) deleteAccount(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	if len(args) != 1 {
 		return shim.Error("Incorrect number of arguments. Expecting 1")
 	}
@@ -178,7 +178,7 @@ func (t *SimpleChaincode) deleteAccount(stub shim.ChaincodeStubInterface, args [
 }
 
 // query callback representing the query of a chaincode
-func (t *SimpleChaincode) queryPlan(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (chaincode *RebateChaincode) queryPlan(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	var A string // Entities
 	var err error
 
@@ -205,7 +205,7 @@ func (t *SimpleChaincode) queryPlan(stub shim.ChaincodeStubInterface, args []str
 	return shim.Success(Avalbytes)
 }
 // query callback representing the query of a chaincode
-func (t *SimpleChaincode) queryAccount(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (chaincode *RebateChaincode) queryAccount(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	var A string // Entities
 	var err error
 
@@ -233,7 +233,7 @@ func (t *SimpleChaincode) queryAccount(stub shim.ChaincodeStubInterface, args []
 }
 
 // query callback representing the query of a chaincode
-func (t *SimpleChaincode) addAmountFromBudget(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (chaincode *RebateChaincode) addAmountFromBudget(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	var planId,accountId string
 	var budgetVal,accountVal,accountByte []byte
 	var budget,val int
@@ -294,7 +294,7 @@ func (t *SimpleChaincode) addAmountFromBudget(stub shim.ChaincodeStubInterface, 
 }
 
 func main() {
-	err := shim.Start(new(SimpleChaincode))
+	err := shim.Start(new(RebateChaincode))
 	if err != nil {
 		fmt.Printf("Error starting Simple chaincode: %s", err)
 	}
