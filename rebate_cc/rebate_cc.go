@@ -23,7 +23,7 @@ type RebateChaincode struct {
 }
 
 type RebateAccount struct{
-	Amount,ExpectAmount  int
+	Amount,ExpectAmount  int64
 	Status string // normal,frozen,stop
 	Details string
 	Memo string
@@ -76,8 +76,6 @@ func (chaincode *RebateChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Re
 	return shim.Error("Invalid invoke function name. Expecting \"invoke\" \"delete\" \"query\"")
 }
 func (chaincode *RebateChaincode) queryHistory(stub shim.ChaincodeStubInterface, args []string) pb.Response{
-	//student1:=Student{1,"Devin Zeng"}
-	//key:="Student:"+strconv.Itoa(student1.Id)
 	if len(args) != 1 {
 		return shim.Error("Incorrect number of arguments. Expecting 3")
 	}
@@ -117,27 +115,41 @@ func getHistoryListResult(resultsIterator shim.HistoryQueryIteratorInterface) ([
 }
 
 
-// Deletes an entity from state
+// create account in ledger
 func (chaincode *RebateChaincode) createAccount(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	var amount, expectAmount int // Asset holdings
+	var amount, expectAmount int64 // Asset holdings
 	var err error
 	if len(args) != 6 {
 		return shim.Error("Incorrect number of arguments. Expecting 1")
 	}
-	acount := args[0]
-	amount, err = strconv.Atoi(args[1])
+
+	account := args[0]
+	amount, err = strconv.ParseInt(args[1], 10, 64)
 	if err != nil {
 		return shim.Error("Expecting integer value for asset holding")
 	}
-	expectAmount, err = strconv.Atoi(args[2])
+	expectAmount, err = strconv.ParseInt(args[2], 10, 64)
 	if err != nil {
 		return shim.Error("Expecting integer value for asset holding")
 	}
+
+
+	//whether the account has registered
+	record, recordErr := stub.GetState(account)
+	if nil != recordErr {
+		return shim.Error("Inner Error" + recordErr.Error())
+	}
+
+	if nil != record {
+		return shim.Error("Account has registered")
+	}
+
+
 	rebateAccount := &RebateAccount{Amount: amount, ExpectAmount: expectAmount,Status:args[3],Details:args[4],Memo:args[5]}
 
 	byteObject,_ := json.Marshal(rebateAccount)
-	// Delete the key from the state in ledger
-	err = stub.PutState(acount,byteObject)
+	// Put the key into the state in ledger
+	err = stub.PutState(account,byteObject)
 	if err != nil {
 		return shim.Error("Failed to delete state")
 	}
