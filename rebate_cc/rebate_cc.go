@@ -249,7 +249,7 @@ func (chaincode *RebateChaincode) queryAccount(stub shim.ChaincodeStubInterface,
 func (chaincode *RebateChaincode) addAmountFromBudget(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	var planId,accountId string
 	var budgetVal,accountVal,accountByte []byte
-	var budget,val int
+	var budget,val int64
 	var err error
 	var account RebateAccount
 	if len(args) != 3 {
@@ -258,7 +258,7 @@ func (chaincode *RebateChaincode) addAmountFromBudget(stub shim.ChaincodeStubInt
 
 	planId = args[0]
 	accountId = args[1]
-	val, err = strconv.Atoi(args[2])
+	val, err = strconv.ParseInt(args[2], 10, 64)
 	if err != nil {
 		return shim.Error("Expecting integer value for asset holding")
 	}
@@ -279,7 +279,7 @@ func (chaincode *RebateChaincode) addAmountFromBudget(stub shim.ChaincodeStubInt
 		return shim.Error(jsonResp)
 	}
 
-	budget,err = strconv.Atoi(string(budgetVal))
+	budget,err = strconv.ParseInt(string(budgetVal), 10, 64)
 	if err != nil {
 		jsonResp := "{\"Error\":\"budget is not int \"}"
 		return shim.Error(jsonResp)
@@ -289,7 +289,7 @@ func (chaincode *RebateChaincode) addAmountFromBudget(stub shim.ChaincodeStubInt
 		jsonResp := "{\"Error\":\"budget is not enough \"}"
 		return shim.Error(jsonResp)
 	}
-	err = stub.PutState("plan_"+planId,[]byte(strconv.Itoa(budget)))
+	err = stub.PutState("plan_"+planId,[]byte(strconv.FormatInt(budget, 10)))
 	if err != nil{
 		return shim.Error(err.Error())
 	}
