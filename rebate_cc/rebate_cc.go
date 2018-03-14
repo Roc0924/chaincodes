@@ -30,13 +30,13 @@ type RebateAccount struct{
 }
 
 func (chaincode *RebateChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
-	fmt.Println("ex02 Init")
+	fmt.Println("Init chaincode rebate_cc")
 
 	return shim.Success(nil)
 }
 
 func (chaincode *RebateChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
-	fmt.Println("ex02 Invoke")
+	fmt.Println("call method Invoke")
 	function, args := stub.GetFunctionAndParameters()
 	if function == "createAccount" {
 		// get one key's history records
@@ -305,6 +305,129 @@ func (chaincode *RebateChaincode) addAmountFromBudget(stub shim.ChaincodeStubInt
 	}
 	return shim.Success(nil)
 }
+
+
+func (chaincode *RebateChaincode) addExpectAmountFromBudget(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	var planId,accountId string
+	var budgetVal,accountVal,accountByte []byte
+	var budget,val int64
+	var err error
+	var account RebateAccount
+	if len(args) != 3 {
+		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
+	}
+
+	planId = args[0]
+	accountId = args[1]
+	val, err = strconv.ParseInt(args[2], 10, 64)
+	if err != nil {
+		return shim.Error("Expecting integer value for asset holding")
+	}
+	// Get the state from the ledger
+	budgetVal, err = stub.GetState("plan_"+planId)
+	if err != nil {
+		jsonResp := "{\"Error\":\"Failed to get state for " + planId + "\"}"
+		return shim.Error(jsonResp)
+	}
+	accountVal, err = stub.GetState(accountId)
+	if err != nil{
+		jsonResp :="{\"Error\":\"get account "+accountId +" err \"}"
+		return shim.Error(jsonResp)
+	}
+	err = json.Unmarshal(accountVal,&account)
+	if err != nil{
+		jsonResp :="{\"Error\":\"account "+accountId +" unmarshal err \"}"
+		return shim.Error(jsonResp)
+	}
+
+	budget,err = strconv.ParseInt(string(budgetVal), 10, 64)
+	if err != nil {
+		jsonResp := "{\"Error\":\"budget is not int \"}"
+		return shim.Error(jsonResp)
+	}
+	budget = budget - val
+	if budget < 0 {
+		jsonResp := "{\"Error\":\"budget is not enough \"}"
+		return shim.Error(jsonResp)
+	}
+	err = stub.PutState("plan_"+planId,[]byte(strconv.FormatInt(budget, 10)))
+	if err != nil{
+		return shim.Error(err.Error())
+	}
+	account.ExpectAmount = account.ExpectAmount + val
+	accountByte,err = json.Marshal(account)
+	if err != nil{
+		jsonResp :="{\"Error\":\"account "+accountId +" format err \"}"
+		return shim.Error(jsonResp)
+	}
+	err = stub.PutState(accountId,accountByte)
+	if err != nil{
+		return shim.Error(err.Error())
+	}
+	return shim.Success(nil)
+}
+
+func (chaincode *RebateChaincode) rollBackExpectRebate(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	var planId,accountId string
+	var budgetVal,accountVal,accountByte []byte
+	var budget,val int64
+	var err error
+	var account RebateAccount
+	if len(args) != 3 {
+		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
+	}
+
+	planId = args[0]
+	accountId = args[1]
+	val, err = strconv.ParseInt(args[2], 10, 64)
+	if err != nil {
+		return shim.Error("Expecting integer value for asset holding")
+	}
+	// Get the state from the ledger
+	budgetVal, err = stub.GetState("plan_"+planId)
+	if err != nil {
+		jsonResp := "{\"Error\":\"Failed to get state for " + planId + "\"}"
+		return shim.Error(jsonResp)
+	}
+	accountVal, err = stub.GetState(accountId)
+	if err != nil{
+		jsonResp :="{\"Error\":\"get account "+accountId +" err \"}"
+		return shim.Error(jsonResp)
+	}
+	err = json.Unmarshal(accountVal,&account)
+	if err != nil{
+		jsonResp :="{\"Error\":\"account "+accountId +" unmarshal err \"}"
+		return shim.Error(jsonResp)
+	}
+
+	budget,err = strconv.ParseInt(string(budgetVal), 10, 64)
+	if err != nil {
+		jsonResp := "{\"Error\":\"budget is not int \"}"
+		return shim.Error(jsonResp)
+	}
+	budget = budget + val
+	if budget < 0 {
+		jsonResp := "{\"Error\":\"budget is not enough \"}"
+		return shim.Error(jsonResp)
+	}
+	err = stub.PutState("plan_"+planId,[]byte(strconv.FormatInt(budget, 10)))
+	if err != nil{
+		return shim.Error(err.Error())
+	}
+	account.ExpectAmount = account.ExpectAmount - val
+	accountByte,err = json.Marshal(account)
+	if err != nil{
+		jsonResp :="{\"Error\":\"account "+accountId +" format err \"}"
+		return shim.Error(jsonResp)
+	}
+	err = stub.PutState(accountId,accountByte)
+	if err != nil{
+		return shim.Error(err.Error())
+	}
+	return shim.Success(nil)
+
+}
+
 
 func main() {
 	err := shim.Start(new(RebateChaincode))
