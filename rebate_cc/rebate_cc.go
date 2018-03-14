@@ -23,10 +23,11 @@ type RebateChaincode struct {
 }
 
 type RebateAccount struct{
-	Amount,ExpectAmount  int64
-	Status string // normal,frozen,stop
-	Details string
-	Memo string
+	accountId string
+	amount,expectAmount  int64
+	status string // normal,frozen,stop
+	details string
+	memo string
 }
 
 func (chaincode *RebateChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
@@ -121,25 +122,36 @@ func getHistoryListResult(resultsIterator shim.HistoryQueryIteratorInterface) ([
 
 // create account in ledger
 func (chaincode *RebateChaincode) createAccount(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	var amount, expectAmount int64 // Asset holdings
+	//var amount, expectAmount int64 // Asset holdings
 	var err error
-	if len(args) != 6 {
-		return shim.Error("Incorrect number of arguments. Expecting 1")
+	if len(args) != 2 {
+		return shim.Error("Incorrect number of arguments. Expecting 2")
 	}
 
-	account := args[0]
-	amount, err = strconv.ParseInt(args[1], 10, 64)
-	if err != nil {
-		return shim.Error("Expecting integer value for asset holding")
+	rebateAccountStr := args[1]
+	var rebateAccount RebateAccount
+	err = json.Unmarshal([]byte(rebateAccountStr),&rebateAccount)
+
+	if nil != err {
+		return shim.Error("unmarshal error :" + rebateAccountStr);
 	}
-	expectAmount, err = strconv.ParseInt(args[2], 10, 64)
-	if err != nil {
-		return shim.Error("Expecting integer value for asset holding")
-	}
+
+
+
+
+	//account := args[1]
+	//amount, err = strconv.ParseInt(args[2], 10, 64)
+	//if err != nil {
+	//	return shim.Error("Expecting integer value for asset holding")
+	//}
+	//expectAmount, err = strconv.ParseInt(args[2], 10, 64)
+	//if err != nil {
+	//	return shim.Error("Expecting integer value for asset holding")
+	//}
 
 
 	//whether the account has registered
-	record, recordErr := stub.GetState(account)
+	record, recordErr := stub.GetState(rebateAccount.accountId)
 	if nil != recordErr {
 		return shim.Error("Inner Error" + recordErr.Error())
 	}
@@ -149,11 +161,11 @@ func (chaincode *RebateChaincode) createAccount(stub shim.ChaincodeStubInterface
 	}
 
 
-	rebateAccount := &RebateAccount{Amount: amount, ExpectAmount: expectAmount,Status:args[3],Details:args[4],Memo:args[5]}
+	//rebateAccount := &RebateAccount{amount: amount, expectAmount: expectAmount,status:args[3],details:args[4],memo:args[5]}
 
-	byteObject,_ := json.Marshal(rebateAccount)
+	//byteObject,_ := json.Marshal(rebateAccount)
 	// Put the key into the state in ledger
-	err = stub.PutState(account,byteObject)
+	err = stub.PutState(rebateAccount.accountId,[]byte(rebateAccountStr))
 	if err != nil {
 		return shim.Error("Failed to delete state")
 	}
@@ -222,30 +234,30 @@ func (chaincode *RebateChaincode) queryPlan(stub shim.ChaincodeStubInterface, ar
 }
 // query callback representing the query of a chaincode
 func (chaincode *RebateChaincode) queryAccount(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	var A string // Entities
+	var accountId string // Entities
 	var err error
 
-	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
+	if len(args) != 2 {
+		return shim.Error("Incorrect number of arguments. Expecting 2")
 	}
 
-	A = args[0]
+	accountId = args[1]
 
 	// Get the state from the ledger
-	Avalbytes, err := stub.GetState(A)
+	recordbytes, err := stub.GetState(accountId)
 	if err != nil {
-		jsonResp := "{\"Error\":\"Failed to get state for " + A + "\"}"
+		jsonResp := "{\"Error\":\"Failed to get state for " + accountId + "\"}"
 		return shim.Error(jsonResp)
 	}
 
-	if Avalbytes == nil {
-		jsonResp := "{\"Error\":\"Nil amount for " + A + "\"}"
+	if recordbytes == nil {
+		jsonResp := "{\"Error\":\"Nil amount for " + accountId + "\"}"
 		return shim.Error(jsonResp)
 	}
 
-	jsonResp := "{\"Name\":\"" + A + "\",\"Amount\":\"" + string(Avalbytes) + "\"}"
-	fmt.Printf("Query Response:%s\n", jsonResp)
-	return shim.Success(Avalbytes)
+	//jsonResp := "{\"Name\":\"" + accountId + "\",\"Amount\":\"" + string(recordbytes) + "\"}"
+	fmt.Printf("Query Response:%s\n", recordbytes)
+	return shim.Success(recordbytes)
 }
 
 // query callback representing the query of a chaincode
@@ -296,7 +308,7 @@ func (chaincode *RebateChaincode) addAmountFromBudget(stub shim.ChaincodeStubInt
 	if err != nil{
 		return shim.Error(err.Error())
 	}
-	account.Amount = account.Amount + val
+	account.amount = account.amount + val
 	accountByte,err = json.Marshal(account)
 	if err != nil{
 		jsonResp :="{\"Error\":\"account "+accountId +" format err \"}"
@@ -357,7 +369,7 @@ func (chaincode *RebateChaincode) addExpectAmountFromBudget(stub shim.ChaincodeS
 	if err != nil{
 		return shim.Error(err.Error())
 	}
-	account.ExpectAmount = account.ExpectAmount + val
+	account.expectAmount = account.expectAmount + val
 	accountByte,err = json.Marshal(account)
 	if err != nil{
 		jsonResp :="{\"Error\":\"account "+accountId +" format err \"}"
@@ -417,7 +429,7 @@ func (chaincode *RebateChaincode) rollBackExpectRebate(stub shim.ChaincodeStubIn
 	if err != nil{
 		return shim.Error(err.Error())
 	}
-	account.ExpectAmount = account.ExpectAmount - val
+	account.expectAmount = account.expectAmount - val
 	accountByte,err = json.Marshal(account)
 	if err != nil{
 		jsonResp :="{\"Error\":\"account "+accountId +" format err \"}"
