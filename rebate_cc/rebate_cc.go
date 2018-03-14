@@ -162,11 +162,11 @@ func (chaincode *RebateChaincode) createAccount(stub shim.ChaincodeStubInterface
 }
 // Deletes an entity from state
 func (chaincode *RebateChaincode) createPlan(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 2 {
-		return shim.Error("Incorrect number of arguments. Expecting 1")
+	if len(args) != 3 {
+		return shim.Error("Incorrect number of arguments. Expecting 3")
 	}
-	A := args[0]
-	val := args[1]
+	A := args[1]
+	val := args[2]
 	A ="plan_"+A
 	// Delete the key from the state in ledger
 	err := stub.PutState(A,[]byte(val))
@@ -198,11 +198,11 @@ func (chaincode *RebateChaincode) queryPlan(stub shim.ChaincodeStubInterface, ar
 	var A string // Entities
 	var err error
 
-	if len(args) != 1 {
+	if len(args) != 2 {
 		return shim.Error("Incorrect number of arguments. Expecting name of the person to query")
 	}
 
-	A = args[0]
+	A = args[1]
 
 	// Get the state from the ledger
 	Avalbytes, err := stub.GetState("plan_"+A)
