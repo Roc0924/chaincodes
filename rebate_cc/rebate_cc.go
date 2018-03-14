@@ -38,31 +38,34 @@ func (chaincode *RebateChaincode) Init(stub shim.ChaincodeStubInterface) pb.Resp
 func (chaincode *RebateChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	fmt.Println("call method Invoke")
 	function, args := stub.GetFunctionAndParameters()
-	if function == "createAccount" {
+	if "invoke" != function {
+		return shim.Error("unknown function invoke")
+	}
+	if args[0] == "createAccount" {
 		// get one key's history records
 		return chaincode.createAccount(stub,args)
-	} else if function == "queryAccount" {
+	} else if args[0] == "queryAccount" {
 		// get one key's history records
 		return chaincode.queryAccount(stub,args)
-	} else if function == "deleteAccount" {
+	} else if args[0] == "deleteAccount" {
 		// Deletes account from ledger state
 		return chaincode.deleteAccount(stub, args)
-	} else if function == "queryHistory" {
+	} else if args[0] == "queryHistory" {
 		// get one key's history records
 		return chaincode.queryHistory(stub,args)
-	} else if function == "createPlan" {
+	} else if args[0] == "createPlan" {
 		// get one key's history records
 		return chaincode.createPlan(stub,args)
-	} else if function == "queryPlan" {
+	} else if args[0] == "queryPlan" {
 		// the old "Query" is now implemtned in invoke
 		return chaincode.queryPlan(stub, args)
-	} else if function == "addAmountFromBudget" {
+	} else if args[0] == "addAmountFromBudget" {
 		// get one key's history records
 		return chaincode.addAmountFromBudget(stub,args)
-	} /*else if function == "addAmountFromExpect" {
+	} else if args[0] == "addAmountFromExpect" {
 		// get one key's history records
 		return chaincode.addAmountFromExpect(stub,args)
-	} else if function == "minusAmount" {
+	} /*else if function == "minusAmount" {
 		// get one key's history records
 		return chaincode.minusAmount(stub,args)
 	} else if function == "addExpectAmount" {
@@ -427,6 +430,24 @@ func (chaincode *RebateChaincode) rollBackExpectRebate(stub shim.ChaincodeStubIn
 	return shim.Success(nil)
 
 }
+
+
+
+func (chaincode *RebateChaincode) addAmountFromExpect(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	return shim.Success(nil)
+}
+
+
+
+func (chaincode *RebateChaincode) move(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	return shim.Success(nil)
+}
+
+
+
+
+
+
 
 
 func main() {
