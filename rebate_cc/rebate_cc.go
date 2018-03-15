@@ -278,7 +278,7 @@ func (chaincode *RebateChaincode) addAmountFromBudget(stub shim.ChaincodeStubInt
 		return shim.Error("Incorrect number of arguments. Expecting 4")
 	}
 
-	planId := args[1]
+	planId := "plan_" + args[1]
 	accountId := args[2]
 	delta, err := strconv.ParseInt(args[3], 10, 64)
 	if nil != err {
@@ -293,7 +293,7 @@ func (chaincode *RebateChaincode) addExpectAmountFromBudget(stub shim.ChaincodeS
 		return shim.Error("Incorrect number of arguments. Expecting 4")
 	}
 
-	planId := args[1]
+	planId := "plan_" + args[1]
 	accountId := args[2]
 	delta, err := strconv.ParseInt(args[3], 10, 64)
 	if nil != err {
