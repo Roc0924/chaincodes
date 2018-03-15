@@ -435,7 +435,7 @@ func (chaincode *RebateChaincode) moveAccountToBudget(stub shim.ChaincodeStubInt
 			jsonResp := "{\"Error\":\"expect amount is not enough \"}"
 			return shim.Error(jsonResp)
 		}
-	} else {
+	} else if "amount" == moveType {
 		fmt.Printf("amount")
 		account.Amount = account.Amount - delta
 		if account.Amount < 0 {
