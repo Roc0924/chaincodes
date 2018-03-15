@@ -274,48 +274,51 @@ func (chaincode *RebateChaincode) queryAccount(stub shim.ChaincodeStubInterface,
 
 // query callback representing the query of a chaincode
 func (chaincode *RebateChaincode) addAmountFromBudget(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 4 {
-		return shim.Error("Incorrect number of arguments. Expecting 4")
+	if len(args) != 5 {
+		return shim.Error("Incorrect number of arguments. Expecting 5")
 	}
 
 	planId := "plan_" + args[1]
 	accountId := args[2]
 	delta, err := strconv.ParseInt(args[3], 10, 64)
+	details := args[4]
 	if nil != err {
 		shim.Error("parse delta error:" + err.Error())
 	}
-	return chaincode.moveBudgetToAccount(stub,planId, accountId, delta, "amount")
+	return chaincode.moveBudgetToAccount(stub,planId, accountId, delta, "amount", details)
 }
 
 
 func (chaincode *RebateChaincode) addExpectAmountFromBudget(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 4 {
-		return shim.Error("Incorrect number of arguments. Expecting 4")
+	if len(args) != 5 {
+		return shim.Error("Incorrect number of arguments. Expecting 5")
 	}
 
 	planId := "plan_" + args[1]
 	accountId := args[2]
 	delta, err := strconv.ParseInt(args[3], 10, 64)
+	details := args[4]
 	if nil != err {
 		shim.Error("parse delta error:" + err.Error())
 	}
-	return chaincode.moveBudgetToAccount(stub,planId, accountId, delta, "expect")
+	return chaincode.moveBudgetToAccount(stub,planId, accountId, delta, "expect", details)
 }
 
 func (chaincode *RebateChaincode) rollBackAmountToBudget(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 
-	if len(args) != 4 {
-		return shim.Error("Incorrect number of arguments. Expecting 4")
+	if len(args) != 5 {
+		return shim.Error("Incorrect number of arguments. Expecting 5")
 	}
 	planId := "plan_" + args[1]
 	accountId := args[2]
 	delta, err := strconv.ParseInt(args[3], 10, 64)
+	details := args[4]
 	if nil != err {
 		shim.Error("parse delta error:" + err.Error())
 	}
 
-	return chaincode.moveAccountToBudget(stub, accountId, planId, delta, "amount")
+	return chaincode.moveAccountToBudget(stub, accountId, planId, delta, "amount", details)
 }
 
 
@@ -323,23 +326,24 @@ func (chaincode *RebateChaincode) rollBackAmountToBudget(stub shim.ChaincodeStub
 func (chaincode *RebateChaincode) rollBackExpectAmountToBudget(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 
-	if len(args) != 4 {
-		return shim.Error("Incorrect number of arguments. Expecting 4")
+	if len(args) != 5 {
+		return shim.Error("Incorrect number of arguments. Expecting 5")
 	}
 	planId := "plan_" + args[1]
 	accountId := args[2]
 	delta, err := strconv.ParseInt(args[3], 10, 64)
+	details := args[4]
 	if nil != err {
 		shim.Error("parse delta error:" + err.Error())
 	}
 
-	return chaincode.moveAccountToBudget(stub, accountId, planId, delta, "expect")
+	return chaincode.moveAccountToBudget(stub, accountId, planId, delta, "expect", details)
 }
 
 
 
 func (chaincode *RebateChaincode) moveBudgetToAccount(stub shim.ChaincodeStubInterface,
-	source string, destination string, delta int64, moveType string) pb.Response {
+	source string, destination string, delta int64, moveType string, details string) pb.Response {
 
 	// Get the state from the ledger
 	budgetVal, err := stub.GetState(source)
@@ -399,7 +403,7 @@ func (chaincode *RebateChaincode) moveBudgetToAccount(stub shim.ChaincodeStubInt
 
 
 func (chaincode *RebateChaincode) moveAccountToBudget(stub shim.ChaincodeStubInterface, source string,
-	destination string, delta int64, moveType string) pb.Response {
+	destination string, delta int64, moveType string, details string) pb.Response {
 
 
 
@@ -426,16 +430,16 @@ func (chaincode *RebateChaincode) moveAccountToBudget(stub shim.ChaincodeStubInt
 		jsonResp := "{\"Error\":\"budget is not int \"}"
 		return shim.Error(jsonResp)
 	}
-	fmt.Println("moveType:" + moveType + " delta:" + string(delta))
-	fmt.Println("account.amount" + string(account.Amount) + " account.ecpectamount:" + string(account.Amount))
+
 	if "expect" == moveType {
 		account.ExpectAmount = account.ExpectAmount - delta
+		account.Details = "rollback expect amount to budget:" + destination + " amount:" + string(delta)
 		if account.ExpectAmount < 0 {
 			jsonResp := "{\"Error\":\"expect amount is not enough \"}"
 			return shim.Error(jsonResp)
 		}
 	} else if "amount" == moveType {
-		fmt.Printf("delta:" + string(delta))
+		account.Details = "rollback amount to budget:" + destination + " amount:" + string(delta)
 		account.Amount = account.Amount - delta
 		if account.Amount < 0 {
 			jsonResp := "{\"Error\":\"amount is not enough \"}"
@@ -443,7 +447,6 @@ func (chaincode *RebateChaincode) moveAccountToBudget(stub shim.ChaincodeStubInt
 		}
 	}
 
-	fmt.Println("account.amount" + string(account.Amount) + " account.ecpectamount:" + string(account.Amount))
 
 
 	accountByte,err := json.Marshal(account)
