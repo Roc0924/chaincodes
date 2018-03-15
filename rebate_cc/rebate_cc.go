@@ -194,16 +194,16 @@ func (chaincode *RebateChaincode) createPlan(stub shim.ChaincodeStubInterface, a
 }
 // Deletes an entity from state
 func (chaincode *RebateChaincode) deleteAccount(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 1 {
+	if len(args) != 2 {
 		return shim.Error("Incorrect number of arguments. Expecting 1")
 	}
 
-	A := args[0]
+	accountId := args[1]
 
 	// Delete the key from the state in ledger
-	err := stub.DelState(A)
+	err := stub.DelState(accountId)
 	if err != nil {
-		return shim.Error("Failed to delete state")
+		return shim.Error("Failed to delete state， error:" + err.Error())
 	}
 
 	return shim.Success(nil)
