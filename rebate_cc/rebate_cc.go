@@ -23,11 +23,11 @@ type RebateChaincode struct {
 }
 
 type RebateAccount struct{
-	accountId string
-	amount,expectAmount  int64
-	status string // normal,frozen,stop
-	details string
-	memo string
+	AccountId string
+	Amount,ExpectAmount  int64
+	Status string // normal,frozen,stop
+	Details string
+	Memo string
 }
 
 func (chaincode *RebateChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
@@ -133,8 +133,8 @@ func (chaincode *RebateChaincode) createAccount(stub shim.ChaincodeStubInterface
 	fmt.Println(rebateAccountStr);
 	err = json.Unmarshal([]byte(rebateAccountStr),&rebateAccount)
 	fmt.Printf("rebate account : accountId:%s, amount:%d, expectAmount:%d, status:%s, details:%s, memo:%s\n",
-		rebateAccount.accountId, rebateAccount.amount, rebateAccount.expectAmount, rebateAccount.status,
-			rebateAccount.details, rebateAccount.memo)
+		rebateAccount.AccountId, rebateAccount.Amount, rebateAccount.ExpectAmount, rebateAccount.Status,
+			rebateAccount.Details, rebateAccount.Memo)
 
 	if nil != err {
 		return shim.Error("unmarshal error :" + rebateAccountStr);
@@ -155,7 +155,7 @@ func (chaincode *RebateChaincode) createAccount(stub shim.ChaincodeStubInterface
 
 
 	//whether the account has registered
-	record, recordErr := stub.GetState(rebateAccount.accountId)
+	record, recordErr := stub.GetState(rebateAccount.AccountId)
 	if nil != recordErr {
 		return shim.Error("Inner Error" + recordErr.Error())
 	}
@@ -169,7 +169,7 @@ func (chaincode *RebateChaincode) createAccount(stub shim.ChaincodeStubInterface
 
 	//byteObject,_ := json.Marshal(rebateAccount)
 	// Put the key into the state in ledger
-	putErr := stub.PutState(rebateAccount.accountId,[]byte(rebateAccountStr))
+	putErr := stub.PutState(rebateAccount.AccountId,[]byte(rebateAccountStr))
 	if putErr != nil {
 		return shim.Error("Failed to put state, error:" + putErr.Error())
 	}
@@ -312,7 +312,7 @@ func (chaincode *RebateChaincode) addAmountFromBudget(stub shim.ChaincodeStubInt
 	if err != nil{
 		return shim.Error(err.Error())
 	}
-	account.amount = account.amount + val
+	account.Amount = account.Amount + val
 	accountByte,err = json.Marshal(account)
 	if err != nil{
 		jsonResp :="{\"Error\":\"account "+accountId +" format err \"}"
@@ -373,7 +373,7 @@ func (chaincode *RebateChaincode) addExpectAmountFromBudget(stub shim.ChaincodeS
 	if err != nil{
 		return shim.Error(err.Error())
 	}
-	account.expectAmount = account.expectAmount + val
+	account.ExpectAmount = account.ExpectAmount + val
 	accountByte,err = json.Marshal(account)
 	if err != nil{
 		jsonResp :="{\"Error\":\"account "+accountId +" format err \"}"
@@ -433,7 +433,7 @@ func (chaincode *RebateChaincode) rollBackExpectRebate(stub shim.ChaincodeStubIn
 	if err != nil{
 		return shim.Error(err.Error())
 	}
-	account.expectAmount = account.expectAmount - val
+	account.ExpectAmount = account.ExpectAmount - val
 	accountByte,err = json.Marshal(account)
 	if err != nil{
 		jsonResp :="{\"Error\":\"account "+accountId +" format err \"}"
