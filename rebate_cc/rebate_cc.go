@@ -130,7 +130,11 @@ func (chaincode *RebateChaincode) createAccount(stub shim.ChaincodeStubInterface
 
 	rebateAccountStr := args[1]
 	var rebateAccount RebateAccount
+	fmt.Println(rebateAccountStr);
 	err = json.Unmarshal([]byte(rebateAccountStr),&rebateAccount)
+	fmt.Printf("rebate account : accountId:%s, amount:%d, expectAmount:%d, status:%s, details:%s, memo:%s\n",
+		rebateAccount.accountId, rebateAccount.amount, rebateAccount.expectAmount, rebateAccount.status,
+			rebateAccount.details, rebateAccount.memo)
 
 	if nil != err {
 		return shim.Error("unmarshal error :" + rebateAccountStr);
