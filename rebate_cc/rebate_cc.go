@@ -165,9 +165,9 @@ func (chaincode *RebateChaincode) createAccount(stub shim.ChaincodeStubInterface
 
 	//byteObject,_ := json.Marshal(rebateAccount)
 	// Put the key into the state in ledger
-	err = stub.PutState(rebateAccount.accountId,[]byte(rebateAccountStr))
-	if err != nil {
-		return shim.Error("Failed to delete state")
+	putErr := stub.PutState(rebateAccount.accountId,[]byte(rebateAccountStr))
+	if putErr != nil {
+		return shim.Error("Failed to put state, error:" + putErr.Error())
 	}
 
 	return shim.Success(nil)
