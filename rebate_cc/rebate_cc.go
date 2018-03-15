@@ -359,6 +359,7 @@ func (chaincode *RebateChaincode) moveBudgetToAccount(stub shim.ChaincodeStubInt
 		return shim.Error(jsonResp)
 	}
 
+	fmt.Printf(string(budgetVal) + "\n")
 	budget,err := strconv.ParseInt(string(budgetVal), 10, 64)
 	if err != nil {
 		jsonResp := "{\"Error\":\"budget is not int \"}"
