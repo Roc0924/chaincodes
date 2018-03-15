@@ -81,10 +81,10 @@ func (chaincode *RebateChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Re
 		" 'queryAccount' 'deleteAccount' 'queryHistory' 'createPlan' 'queryPlan' 'addAmountFromBudget' 'query' 'query'")
 }
 func (chaincode *RebateChaincode) queryHistory(stub shim.ChaincodeStubInterface, args []string) pb.Response{
-	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting 3")
+	if len(args) != 2 {
+		return shim.Error("Incorrect number of arguments. Expecting 2")
 	}
-	key:=args[0]
+	key:=args[1]
 	it,err:= stub.GetHistoryForKey(key)
 	if err!=nil{
 		return shim.Error(err.Error())
