@@ -63,13 +63,13 @@ func (chaincode *RebateChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Re
 	} else if args[0] == "addAmountFromBudget" {
 		// get one key's history records
 		return chaincode.addAmountFromBudget(stub,args)
-	} else if function == "rollBackAmountToBudget" {
+	} else if args[0] == "rollBackAmountToBudget" {
 		// get one key's history records
 		return chaincode.rollBackAmountToBudget(stub,args)
 	} else if args[0] == "addExpectAmountFromBudget" {
 		// get one key's history records
 		return chaincode.addExpectAmountFromBudget(stub,args)
-	} else if function == "rollBackExpectAmountToBudget" {
+	} else if args[0] == "rollBackExpectAmountToBudget" {
 		// get one key's history records
 		return chaincode.rollBackExpectAmountToBudget(stub,args)
 	} /*else if function == "addExpectAmount" {
