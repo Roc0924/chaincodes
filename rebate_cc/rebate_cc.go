@@ -426,29 +426,32 @@ func (chaincode *RebateChaincode) moveAccountToBudget(stub shim.ChaincodeStubInt
 		jsonResp := "{\"Error\":\"budget is not int \"}"
 		return shim.Error(jsonResp)
 	}
-
-	fmt.Println("expect" == moveType)
+	fmt.Println("moveType:" + moveType + " delta:" + string(delta))
+	fmt.Println("account.amount" + string(account.Amount) + " account.ecpectamount:" + string(account.Amount))
 	if "expect" == moveType {
-		fmt.Printf(moveType)
 		account.ExpectAmount = account.ExpectAmount - delta
 		if account.ExpectAmount < 0 {
 			jsonResp := "{\"Error\":\"expect amount is not enough \"}"
 			return shim.Error(jsonResp)
 		}
 	} else if "amount" == moveType {
-		fmt.Printf("amount")
+		fmt.Printf("delta:" + string(delta))
 		account.Amount = account.Amount - delta
 		if account.Amount < 0 {
 			jsonResp := "{\"Error\":\"amount is not enough \"}"
 			return shim.Error(jsonResp)
 		}
 	}
+
+	fmt.Println("account.amount" + string(account.Amount) + " account.ecpectamount:" + string(account.Amount))
+
+
 	accountByte,err := json.Marshal(account)
 	if err != nil{
 		jsonResp :="{\"Error\":\"account "+ source +" format err \"}"
 		return shim.Error(jsonResp)
 	}
-	err = stub.PutState(destination,accountByte)
+	err = stub.PutState(source,accountByte)
 	if err != nil{
 		return shim.Error(err.Error())
 	}
