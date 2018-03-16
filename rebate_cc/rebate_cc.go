@@ -387,6 +387,7 @@ func (chaincode *RebateChaincode) moveBudgetToAccount(stub shim.ChaincodeStubInt
 	} else {
 		account.Amount = account.Amount + delta
 	}
+	account.Details = details
 	accountByte,err := json.Marshal(account)
 	if err != nil{
 		jsonResp :="{\"Error\":\"account "+destination +" format err \"}"
@@ -449,6 +450,7 @@ func (chaincode *RebateChaincode) moveAccountToBudget(stub shim.ChaincodeStubInt
 
 
 
+	account.Details = details
 	accountByte,err := json.Marshal(account)
 	if err != nil{
 		jsonResp :="{\"Error\":\"account "+ source +" format err \"}"
