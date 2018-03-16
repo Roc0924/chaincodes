@@ -72,10 +72,10 @@ func (chaincode *RebateChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Re
 	} else if args[0] == "rollBackExpectAmountToBudget" {
 		// get one key's history records
 		return chaincode.rollBackExpectAmountToBudget(stub,args)
-	} /*else if function == "addExpectAmount" {
+	} else if args[0] == "collectExcept" {
 		// get one key's history records
-		return chaincode.addExpectAmount(stub,args)
-	} else if function == "minusExpectAmount" {
+		return chaincode.collectExcept(stub,args)
+	} /*else if function == "minusExpectAmount" {
 		// get one key's history records
 		return chaincode.minusExpectAmount(stub,args)
 	}*/
@@ -434,13 +434,11 @@ func (chaincode *RebateChaincode) moveAccountToBudget(stub shim.ChaincodeStubInt
 
 	if "expect" == moveType {
 		account.ExpectAmount = account.ExpectAmount - delta
-		account.Details = "rollback expect amount to budget:" + destination + " amount:" + string(delta)
 		if account.ExpectAmount < 0 {
 			jsonResp := "{\"Error\":\"expect amount is not enough \"}"
 			return shim.Error(jsonResp)
 		}
 	} else if "amount" == moveType {
-		account.Details = "rollback amount to budget:" + destination + " amount:" + string(delta)
 		account.Amount = account.Amount - delta
 		if account.Amount < 0 {
 			jsonResp := "{\"Error\":\"amount is not enough \"}"
@@ -474,6 +472,56 @@ func (chaincode *RebateChaincode) moveAccountToBudget(stub shim.ChaincodeStubInt
 
 	return shim.Success(nil)
 }
+
+
+
+func (chaincode *RebateChaincode) collectExcept(stub shim.ChaincodeStubInterface, args[] string) pb.Response {
+
+	if len(args) != 4 {
+		return shim.Error("Incorrect number of arguments. Expecting 4")
+	}
+
+	accountId := args[1]
+	delta, err:= strconv.ParseInt(args[2], 10, 64)
+	if nil != err {
+		shim.Error("parse delta error: " + err.Error())
+	}
+
+	details := args[3]
+
+	// Get the state from the ledger
+	accountVal, err := stub.GetState(accountId)
+	if err != nil{
+		jsonResp :="{\"Error\":\"get account "+accountId +" err \"}"
+		return shim.Error(jsonResp)
+	}
+	account := RebateAccount{}
+	err = json.Unmarshal(accountVal,&account)
+	if err != nil{
+		jsonResp :="{\"Error\":\"account "+accountId +" unmarshal err \"}"
+		return shim.Error(jsonResp)
+	}
+
+
+	account.ExpectAmount = account.ExpectAmount - delta
+	if account.ExpectAmount < 0 {
+		jsonResp := "{\"Error\":\"expect amount is not enough \"}"
+		return shim.Error(jsonResp)
+	}
+	account.Details = details
+	account.Amount = account.Amount + delta
+	accountByte,err := json.Marshal(account)
+	if err != nil{
+		jsonResp :="{\"Error\":\"account "+ accountId +" format err \"}"
+		return shim.Error(jsonResp)
+	}
+	err = stub.PutState(accountId,accountByte)
+	if err != nil{
+		return shim.Error(err.Error())
+	}
+	return shim.Success(nil)
+}
+
 
 
 func main() {
